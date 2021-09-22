@@ -451,7 +451,7 @@ class PlayContextSpec(Spec):
         return self._play_context.private_key_file
 
     def ssh_executable(self):
-        return self._play_context.ssh_executable
+        return C.config.get_config_value("ssh_executable", plugin_type="connection", plugin_name="ssh")
 
     def timeout(self):
         return self._play_context.timeout
@@ -464,12 +464,28 @@ class PlayContextSpec(Spec):
         )
 
     def ssh_args(self):
+        variables = self._task_vars.get("vars", {})
         return [
             mitogen.core.to_text(term)
             for s in (
-                getattr(self._play_context, 'ssh_args', ''),
-                getattr(self._play_context, 'ssh_common_args', ''),
-                getattr(self._play_context, 'ssh_extra_args', '')
+                C.config.get_config_value(
+                    "ssh_args",
+                    plugin_type="connection",
+                    plugin_name="ssh",
+                    variables=variables,
+                ),
+                C.config.get_config_value(
+                    "ssh_common_args",
+                    plugin_type="connection",
+                    plugin_name="ssh",
+                    variables=variables,
+                ),
+                C.config.get_config_value(
+                    "ssh_extra_args",
+                    plugin_type="connection",
+                    plugin_name="ssh",
+                    variables=variables,
+                ),
             )
             for term in ansible.utils.shlex.shlex_split(s or '')
         ]
